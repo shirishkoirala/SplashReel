@@ -185,22 +185,7 @@ extension SplashReelVC: UICollectionViewDelegate, UICollectionViewDataSource {
     }
     
     func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
-        guard scrollView is UICollectionView else { return }
-        if(scrollView == bottomCollectionView){
-            backgroundCollectionView.isScrollEnabled = false
-        }else if(scrollView == backgroundCollectionView){
-            bottomCollectionView.isScrollEnabled = false
-        }
         timer?.invalidate()
-    }
-    
-    func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool){
-        guard scrollView is UICollectionView else { return }
-        if(scrollView == bottomCollectionView){
-            backgroundCollectionView.isScrollEnabled = true
-        } else if(scrollView == backgroundCollectionView){
-            bottomCollectionView.isScrollEnabled = true
-        }
     }
 
     func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
@@ -208,11 +193,6 @@ extension SplashReelVC: UICollectionViewDelegate, UICollectionViewDataSource {
     }
     
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        if(scrollView == bottomCollectionView){
-            backgroundCollectionView.isScrollEnabled = true
-        } else if(scrollView == backgroundCollectionView){
-            bottomCollectionView.isScrollEnabled = true
-        }
         realignBackgroundCollectionView()
         startTimer()
     }

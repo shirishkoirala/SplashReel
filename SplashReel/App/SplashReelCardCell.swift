@@ -49,13 +49,13 @@ class SplashReelCardCell: UICollectionViewCell {
     func transformIfNeeded() {
         UIView.animate(withDuration: 0.2) {
             if self.isCenter {
-                self.imageView.transform = CGAffineTransform.identity
+                self.imageView.transform = CGAffineTransform(scaleX: 1.2, y: 1.2)
                 self.imageView.alpha = 1.0
                 self.imageView.layer.shadowOpacity = 1
                 self.imageView.layer.shadowOffset = CGSize(width: 0, height: 2)
                 self.imageView.layer.shadowRadius = 3
             } else {
-                self.imageView.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
+                self.imageView.transform = CGAffineTransform.identity
                 self.imageView.alpha = 0.5
                 self.imageView.layer.shadowOpacity = 0
             }
