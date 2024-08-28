@@ -11,7 +11,6 @@ class SplashReelBackgroundCell: UICollectionViewCell {
     lazy var imageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
-        imageView.layer.cornerRadius = 25
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()

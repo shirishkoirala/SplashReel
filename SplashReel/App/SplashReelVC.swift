@@ -17,7 +17,16 @@ class SplashReelVC: UIViewController {
     private var currentIndex: Int = 0
     private let buffer = 3
     private var totalElements = 0
-    private var images: [String] = ["back_to_the_future", "good_fellas", "jaws", "matrix", "pulp_fiction", "shawshank_redemption", "star_wars"]
+    private var images: [String] = [
+        "back_to_the_future",
+        "good_fellas", "jaws",
+        "matrix",
+        "pulp_fiction",
+        "shawshank_redemption",
+        "star_wars"
+    ]
+    
+    private let timer = TimerManager()
     
     private var data: [SplashReelModel] = [] {
         didSet {
@@ -51,6 +60,7 @@ class SplashReelVC: UIViewController {
         let flowLayout = UICollectionViewFlowLayout()
         flowLayout.scrollDirection = .horizontal
         flowLayout.minimumLineSpacing = 0.0
+        flowLayout.minimumInteritemSpacing = 0.0
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: flowLayout)
         collectionView.register(SplashReelBackgroundCell.self, forCellWithReuseIdentifier: SplashReelBackgroundCell.identifier)
         collectionView.backgroundColor = .clear
@@ -59,7 +69,7 @@ class SplashReelVC: UIViewController {
         collectionView.isPagingEnabled = true
         collectionView.isUserInteractionEnabled = true
         collectionView.decelerationRate = .fast
-        collectionView.contentInsetAdjustmentBehavior = .never
+        collectionView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         collectionView.showsHorizontalScrollIndicator = false
         collectionView.showsVerticalScrollIndicator = false
         collectionView.delegate = self
@@ -86,11 +96,12 @@ class SplashReelVC: UIViewController {
         ])
         
         getData()
-        Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { _ in
-            self.currentIndex += 1
-            let nextInexPath = IndexPath(row: self.currentIndex, section: 0)
-            self.bottomCollectionView.scrollToItem(at: nextInexPath, at: .centeredHorizontally, animated: true)
-        }
+            timer.onTick = {
+                self.currentIndex += 1
+                let nextInexPath = IndexPath(row: self.currentIndex, section: 0)
+                self.bottomCollectionView.scrollToItem(at: nextInexPath, at: .centeredHorizontally, animated: true)
+            }
+        timer.start()
     }
     
     func getData() {
@@ -114,7 +125,7 @@ extension SplashReelVC: UICollectionViewDelegate, UICollectionViewDataSource {
             var backgroundIndex = recycledIndex + 1
             if(backgroundIndex >= data.count){ backgroundIndex = 0}
             else if(backgroundIndex < 0){ backgroundIndex =  data.count - 1}
-                
+            cell.backgroundColor = .red
             cell.configure(with: data[backgroundIndex].backgroundImage)
             return cell
         } else {
@@ -127,6 +138,19 @@ extension SplashReelVC: UICollectionViewDelegate, UICollectionViewDataSource {
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         guard scrollView is UICollectionView else { return }
+        let itemSize = scrollView.contentSize.width / CGFloat(totalElements)
+        
+        if scrollView.contentOffset.x > itemSize * CGFloat(data.count){
+            scrollView.contentOffset.x -= itemSize * CGFloat(data.count)
+        }
+        
+        if scrollView.contentOffset.x < 0{
+            scrollView.contentOffset.x += itemSize * CGFloat(data.count)
+        }
+        
+        let bottomItemSize = bottomCollectionView.contentSize.width / CGFloat(data.count)
+        let backgroundItemSize = (backgroundCollectionView.contentSize.width - 40) / CGFloat(data.count)
+        
         if(scrollView == bottomCollectionView){
             let centerPoint = CGPoint(x: (scrollView.bounds.width / 2) + scrollView.contentOffset.x, y: scrollView.bounds.height / 2 + scrollView.contentOffset.y)
             
@@ -141,28 +165,21 @@ extension SplashReelVC: UICollectionViewDelegate, UICollectionViewDataSource {
                     }
                 }
             }
-            let itemSize = self.bottomCollectionView.contentSize.width / CGFloat(totalElements)
             
-            if scrollView.contentOffset.x > itemSize * CGFloat(data.count){
-                bottomCollectionView.contentOffset.x -= itemSize * CGFloat(data.count)
+            let offsetRatio = backgroundItemSize/bottomItemSize
+            
+            let targetOffset = bottomCollectionView.contentOffset.x * offsetRatio
+            
+            if(targetOffset > 0 && targetOffset <= backgroundCollectionView.contentSize.width){
+                backgroundCollectionView.contentOffset.x = targetOffset
             }
+        } else if (scrollView == backgroundCollectionView){
+            let offsetRatio = bottomItemSize/backgroundItemSize
             
-            if scrollView.contentOffset.x < 0{
-                bottomCollectionView.contentOffset.x += itemSize * CGFloat(data.count)
-            }
+            let targetOffset = backgroundCollectionView.contentOffset.x * offsetRatio
             
-            let itemSizeBackground = self.backgroundCollectionView.contentSize.width / CGFloat(totalElements)
-            
-            let multiplier = itemSizeBackground / itemSize  
-            if(multiplier > 0){
-                backgroundCollectionView.contentOffset.x = bottomCollectionView.contentOffset.x * multiplier
-            }
-        }else if (scrollView == backgroundCollectionView){
-            let itemSize = self.bottomCollectionView.contentSize.width / CGFloat(totalElements)
-            let itemSizeBackground = self.backgroundCollectionView.contentSize.width / CGFloat(totalElements)
-            let multiplier = itemSizeBackground / itemSize
-            if(multiplier > 0){
-                bottomCollectionView.contentOffset.x = backgroundCollectionView.contentOffset.x / multiplier
+            if(targetOffset > 0 && targetOffset <= bottomCollectionView.contentSize.width){
+                bottomCollectionView.contentOffset.x = targetOffset
             }
         }
     }
@@ -173,12 +190,13 @@ extension SplashReelVC: UICollectionViewDelegate, UICollectionViewDataSource {
         }else if(scrollView == backgroundCollectionView){
             bottomCollectionView.isScrollEnabled = false
         }
+        timer.pause()
     }
     
     func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool){
         if(scrollView == bottomCollectionView){
             backgroundCollectionView.isScrollEnabled = true
-        }else if(scrollView == backgroundCollectionView){
+        } else if(scrollView == backgroundCollectionView){
             bottomCollectionView.isScrollEnabled = true
         }
     }
@@ -186,17 +204,25 @@ extension SplashReelVC: UICollectionViewDelegate, UICollectionViewDataSource {
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         if(scrollView == bottomCollectionView){
             backgroundCollectionView.isScrollEnabled = true
-        }else if(scrollView == backgroundCollectionView){
+        } else if(scrollView == backgroundCollectionView){
             bottomCollectionView.isScrollEnabled = true
         }
+        
+        var visibleRect = CGRect()
+        visibleRect.origin = backgroundCollectionView.contentOffset
+        visibleRect.size = backgroundCollectionView.bounds.size
+        let visiblePoint = CGPoint(x: visibleRect.midX, y: visibleRect.minY)
+        guard let indexPath = backgroundCollectionView.indexPathForItem(at: visiblePoint) else { return }
+        self.backgroundCollectionView.scrollToItem(at: indexPath, at: .right, animated: true)
+        timer.resume()
     }
 }
 
 extension SplashReelVC: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         if(collectionView == backgroundCollectionView){
-            let cellHeight = screenHeight
-            let cellWidth = screenWidth
+            let cellHeight = collectionView.bounds.height
+            let cellWidth = collectionView.bounds.width
             return CGSize(width: cellWidth, height: cellHeight)
         }else{
             let cellHeight = screenHeight * 0.1814
@@ -205,3 +231,73 @@ extension SplashReelVC: UICollectionViewDelegateFlowLayout {
         }
     }
 }
+
+class TimerManager {
+    private var timer: DispatchSourceTimer?
+    private var startTime: Date?
+    private var elapsedTime: TimeInterval = 0
+    private var isPaused: Bool = false
+    
+    private let timerQueue =  DispatchQueue.main
+    
+    // Interval between timer triggers
+    let interval: TimeInterval = 5.0
+    
+    // Callback for timer events
+    var onTick: (() -> Void)?
+    
+    init() {
+        // Initialize timer-related properties
+        startTime = nil
+        elapsedTime = 0
+        isPaused = false
+    }
+    
+    func start() {
+        guard timer == nil else { return } // Timer is already running
+        
+        let source = DispatchSource.makeTimerSource(queue: timerQueue)
+        timer = source
+        
+        // Schedule the timer to trigger every `interval` seconds
+        source.schedule(deadline: .now(), repeating: interval)
+        source.setEventHandler { [weak self] in
+            self?.tick()
+        }
+        source.resume()
+        
+        // Update the start time when the timer starts
+        startTime = Date()
+        isPaused = false
+    }
+    
+    func pause() {
+        guard !isPaused else { return } // Timer is already paused
+        
+        isPaused = true
+        elapsedTime += Date().timeIntervalSince(startTime ?? Date())
+        timer?.suspend()
+    }
+    
+    func resume() {
+        guard isPaused else { return } // Timer is not paused
+        
+        isPaused = false
+        startTime = Date() // Reset start time to now
+        timer?.resume()
+    }
+    
+    func reset() {
+        timer?.cancel()
+        timer = nil
+        startTime = nil
+        elapsedTime = 0
+        isPaused = false
+    }
+    
+    private func tick() {
+        // Call the onTick closure to perform actions
+        onTick?()
+    }
+}
+
