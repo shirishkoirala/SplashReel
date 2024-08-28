@@ -181,9 +181,11 @@ extension SplashReelVC: UICollectionViewDelegate, UICollectionViewDataSource {
                 bottomCollectionView.contentOffset.x = targetOffset
             }
         }
+    
     }
     
     func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        guard scrollView is UICollectionView else { return }
         if(scrollView == bottomCollectionView){
             backgroundCollectionView.isScrollEnabled = false
         }else if(scrollView == backgroundCollectionView){
@@ -193,11 +195,16 @@ extension SplashReelVC: UICollectionViewDelegate, UICollectionViewDataSource {
     }
     
     func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool){
+        guard scrollView is UICollectionView else { return }
         if(scrollView == bottomCollectionView){
             backgroundCollectionView.isScrollEnabled = true
         } else if(scrollView == backgroundCollectionView){
             bottomCollectionView.isScrollEnabled = true
         }
+    }
+
+    func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
+        realignBackgroundCollectionView()
     }
     
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
@@ -206,14 +213,17 @@ extension SplashReelVC: UICollectionViewDelegate, UICollectionViewDataSource {
         } else if(scrollView == backgroundCollectionView){
             bottomCollectionView.isScrollEnabled = true
         }
-        
+        realignBackgroundCollectionView()
+        startTimer()
+    }
+    
+    private func realignBackgroundCollectionView(){
         var visibleRect = CGRect()
         visibleRect.origin = backgroundCollectionView.contentOffset
         visibleRect.size = backgroundCollectionView.bounds.size
         let visiblePoint = CGPoint(x: visibleRect.midX, y: visibleRect.minY)
         guard let indexPath = backgroundCollectionView.indexPathForItem(at: visiblePoint) else { return }
-        self.backgroundCollectionView.scrollToItem(at: indexPath, at: .right, animated: true)
-        startTimer()
+        self.backgroundCollectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: true)
     }
 }
 
