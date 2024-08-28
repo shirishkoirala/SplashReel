@@ -17,6 +17,7 @@ class SplashReelVC: UIViewController {
     private var currentIndex: Int = 0
     private let buffer = 3
     private var totalElements = 0
+    private var images: [String] = ["back_to_the_future", "good_fellas", "jaws", "matrix", "pulp_fiction", "shawshank_redemption", "star_wars"]
     
     var data: [SplashReelModel] = [] {
         didSet {
@@ -60,11 +61,17 @@ class SplashReelVC: UIViewController {
         
         collectionView.showsHorizontalScrollIndicator = false
         getData()
+        
+        Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { _ in
+            self.currentIndex += 1
+            let nextInexPath = IndexPath(row: self.currentIndex, section: 0)
+            self.collectionView.scrollToItem(at: nextInexPath, at: .centeredHorizontally, animated: true)
+        }
     }
     
     func getData() {
-        for _ in 0..<5 {
-            data.append(SplashReelModel(cardImage: "back_to_the_future", backgroundImage: "back_to_the_future"))
+        images.forEach { image in
+            data.append(SplashReelModel(cardImage: image, backgroundImage: image))
         }
     }
     
@@ -110,6 +117,7 @@ extension SplashReelVC: UICollectionViewDelegate, UICollectionViewDataSource {
         }
     }
 }
+
 extension SplashReelVC: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let cellHeight = screenHeight * 0.1814
@@ -120,7 +128,6 @@ extension SplashReelVC: UICollectionViewDelegateFlowLayout {
 
 final class CollectionViewLayout: UICollectionViewFlowLayout {
     var previousOffset: CGFloat = 0.0
-    var currentPage = 0
     
     override func prepare() {
         super.prepare()
@@ -147,14 +154,5 @@ final class CollectionViewLayout: UICollectionViewFlowLayout {
         
         let nextOffset = proposedContentOffset.x + offsetAdjustment
         return CGPoint(x: nextOffset, y: proposedContentOffset.y)
-    }
-    
-    func updateOffset(cv: UICollectionView) -> CGFloat {
-        let w = cv.frame.width
-        let itemW = itemSize.width
-        let sp = minimumLineSpacing
-        let edge = (w - itemW - sp * 2) / 2
-        let offset = (itemW + sp) * CGFloat(currentPage) - (edge + sp)
-        return offset
     }
 }
