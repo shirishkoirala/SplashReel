@@ -15,6 +15,8 @@ class SplashReelVC: UIViewController {
     private let screenHeight = UIScreen.main.bounds.height
     private let screenWidth = UIScreen.main.bounds.width
     private var currentIndex: Int = 0
+    private let buffer = 3
+    private var totalElements = 0
     
     var data: [SplashReelModel] = [] {
         didSet {
@@ -70,12 +72,14 @@ class SplashReelVC: UIViewController {
 
 extension SplashReelVC: UICollectionViewDelegate, UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return data.count
+        totalElements = buffer + data.count
+        return totalElements
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SplashReelCardCell.identifier, for: indexPath) as! SplashReelCardCell
-        cell.configure(with: data[indexPath.row].cardImage)
+        let recycledIndex = indexPath.row % data.count
+        cell.configure(with: data[recycledIndex].cardImage)
         cell.isCenter = (indexPath.row == currentIndex)
         return cell
     }
@@ -93,6 +97,16 @@ extension SplashReelVC: UICollectionViewDelegate, UICollectionViewDataSource {
                     }
                 }
             }
+        }
+        
+        let itemSize = self.collectionView.contentSize.width / CGFloat(totalElements)
+        
+        if scrollView.contentOffset.x > itemSize * CGFloat(data.count){
+            collectionView.contentOffset.x -= itemSize * CGFloat(data.count)
+        }
+        
+        if scrollView.contentOffset.x < 0{
+            collectionView.contentOffset.x += itemSize * CGFloat(data.count)
         }
     }
 }
