@@ -12,8 +12,9 @@ struct SplashReelModel{
 }
 
 class SplashReelVC: UIViewController {
-    let screenHeight = UIScreen.main.bounds.height
-    let screenWidth = UIScreen.main.bounds.width
+    private let screenHeight = UIScreen.main.bounds.height
+    private let screenWidth = UIScreen.main.bounds.width
+    private var currentIndex: Int = 0
     
     var data: [SplashReelModel] = [] {
         didSet {
@@ -21,25 +22,23 @@ class SplashReelVC: UIViewController {
         }
     }
     
-    var centerCell: SplashReelCardCell?
     lazy var collectionViewFlowLayout: CollectionViewLayout = {
         let layout = CollectionViewLayout()
-        layout.minimumLineSpacing = UIScreen.main.bounds.width * 0.1
-        layout.minimumInteritemSpacing = UIScreen.main.bounds.width * 0.1
         return layout
     }()
+    
     lazy var collectionView: UICollectionView = {
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: collectionViewFlowLayout)
         collectionView.register(SplashReelCardCell.self, forCellWithReuseIdentifier: SplashReelCardCell.identifier)
         collectionView.backgroundColor = .clear
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.transform = .identity
-        
+        collectionView.isUserInteractionEnabled = true
         collectionView.decelerationRate = .fast
         collectionView.contentInsetAdjustmentBehavior = .never
         collectionView.showsHorizontalScrollIndicator = false
         collectionView.showsVerticalScrollIndicator = false
-        collectionView.contentInset = UIEdgeInsets(top: 10.0, left: 0.0, bottom: 10.0, right: 0.0)
+        collectionView.contentInset = UIEdgeInsets(top: 10.0, left: 0, bottom: 10.0, right: 0)
         return collectionView
     }()
     
@@ -62,7 +61,7 @@ class SplashReelVC: UIViewController {
     }
     
     func getData() {
-        for(_) in 0..<100 {
+        for _ in 0..<5 {
             data.append(SplashReelModel(cardImage: "back_to_the_future", backgroundImage: "back_to_the_future"))
         }
     }
@@ -77,7 +76,7 @@ extension SplashReelVC: UICollectionViewDelegate, UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SplashReelCardCell.identifier, for: indexPath) as! SplashReelCardCell
         cell.configure(with: data[indexPath.row].cardImage)
-        cell.isCenter = (indexPath.row == collectionViewFlowLayout.currentPage)
+        cell.isCenter = (indexPath.row == currentIndex)
         return cell
     }
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
@@ -85,8 +84,8 @@ extension SplashReelVC: UICollectionViewDelegate, UICollectionViewDataSource {
         let centerPoint = CGPoint(x: (scrollView.bounds.width / 2) + scrollView.contentOffset.x, y: scrollView.bounds.height / 2 + scrollView.contentOffset.y)
         
         if let centerIndexPath = collectionView.indexPathForItem(at: centerPoint) {
-            if centerIndexPath.row != collectionViewFlowLayout.currentPage {
-                collectionViewFlowLayout.currentPage = centerIndexPath.row
+            if centerIndexPath.row != currentIndex {
+                currentIndex = centerIndexPath.row
                 collectionView.visibleCells.forEach { cell in
                     if let cell = cell as? SplashReelCardCell,
                        let indexPath = collectionView.indexPath(for: cell) {
@@ -96,15 +95,15 @@ extension SplashReelVC: UICollectionViewDelegate, UICollectionViewDataSource {
             }
         }
     }
-    
 }
 extension SplashReelVC: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let cellHeight = screenHeight * 0.1814
-        let cellWidth = screenWidth * 0.2617
+        let cellWidth = screenWidth * 0.32
         return CGSize(width: cellWidth, height: cellHeight)
     }
 }
+
 final class CollectionViewLayout: UICollectionViewFlowLayout {
     var previousOffset: CGFloat = 0.0
     var currentPage = 0
