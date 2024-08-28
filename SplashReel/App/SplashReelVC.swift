@@ -128,7 +128,6 @@ extension SplashReelVC: UICollectionViewDelegate, UICollectionViewDataSource {
             var backgroundIndex = recycledIndex + 1
             if(backgroundIndex >= data.count){ backgroundIndex = 0}
             else if(backgroundIndex < 0){ backgroundIndex =  data.count - 1}
-            cell.backgroundColor = .red
             cell.configure(with: data[backgroundIndex].backgroundImage)
             return cell
         } else {
@@ -153,6 +152,7 @@ extension SplashReelVC: UICollectionViewDelegate, UICollectionViewDataSource {
         
         let bottomItemSize = bottomCollectionView.contentSize.width / CGFloat(data.count)
         let backgroundItemSize = (backgroundCollectionView.contentSize.width - 40) / CGFloat(data.count)
+        let offsetRatio = backgroundItemSize/bottomItemSize
         
         if(scrollView == bottomCollectionView){
             let centerPoint = CGPoint(x: (scrollView.bounds.width / 2) + scrollView.contentOffset.x, y: scrollView.bounds.height / 2 + scrollView.contentOffset.y)
@@ -169,17 +169,13 @@ extension SplashReelVC: UICollectionViewDelegate, UICollectionViewDataSource {
                 }
             }
             
-            let offsetRatio = backgroundItemSize/bottomItemSize
-            
             let targetOffset = bottomCollectionView.contentOffset.x * offsetRatio
             
             if(targetOffset > 0 && targetOffset <= backgroundCollectionView.contentSize.width){
                 backgroundCollectionView.contentOffset.x = targetOffset
             }
         } else if (scrollView == backgroundCollectionView){
-            let offsetRatio = bottomItemSize/backgroundItemSize
-            
-            let targetOffset = backgroundCollectionView.contentOffset.x * offsetRatio
+            let targetOffset = backgroundCollectionView.contentOffset.x / offsetRatio
             
             if(targetOffset > 0 && targetOffset <= bottomCollectionView.contentSize.width){
                 bottomCollectionView.contentOffset.x = targetOffset
@@ -224,9 +220,7 @@ extension SplashReelVC: UICollectionViewDelegate, UICollectionViewDataSource {
 extension SplashReelVC: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         if(collectionView == backgroundCollectionView){
-            let cellHeight = collectionView.bounds.height
-            let cellWidth = collectionView.bounds.width
-            return CGSize(width: cellWidth, height: cellHeight)
+            return CGSize(width: screenWidth, height: screenHeight)
         }else{
             let cellHeight = screenHeight * 0.1814
             let cellWidth = screenWidth * 0.32

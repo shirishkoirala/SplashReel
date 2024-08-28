@@ -10,7 +10,7 @@ class SplashReelBackgroundCell: UICollectionViewCell {
     static let identifier: String = "SplashReelBackgroundCell"
     lazy var imageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.contentMode = .scaleAspectFit
+        imageView.contentMode = .scaleAspectFill
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
@@ -25,6 +25,7 @@ class SplashReelBackgroundCell: UICollectionViewCell {
     }
     
     func setup () {
+        clipsToBounds = true
         contentView.addSubview(imageView)
         imageView.topAnchor.constraint(equalTo: contentView.topAnchor).isActive = true
         imageView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor).isActive = true
