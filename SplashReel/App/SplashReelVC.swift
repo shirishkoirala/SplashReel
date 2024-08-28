@@ -26,7 +26,7 @@ class SplashReelVC: UIViewController {
         "star_wars"
     ]
     
-    private let timer = TimerManager()
+    private var timer: Timer?
     
     private var data: [SplashReelModel] = [] {
         didSet {
@@ -96,12 +96,16 @@ class SplashReelVC: UIViewController {
         ])
         
         getData()
-            timer.onTick = {
-                self.currentIndex += 1
-                let nextInexPath = IndexPath(row: self.currentIndex, section: 0)
-                self.bottomCollectionView.scrollToItem(at: nextInexPath, at: .centeredHorizontally, animated: true)
-            }
-        timer.start()
+        startTimer()
+    }
+    
+    func startTimer(){
+        timer?.invalidate()
+        timer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { _ in
+            self.currentIndex += 1
+            let nextInexPath = IndexPath(row: self.currentIndex, section: 0)
+            self.bottomCollectionView.scrollToItem(at: nextInexPath, at: .centeredHorizontally, animated: true)
+        }
     }
     
     func getData() {
@@ -109,7 +113,6 @@ class SplashReelVC: UIViewController {
             data.append(SplashReelModel(cardImage: image, backgroundImage: image))
         }
     }
-    
 }
 
 extension SplashReelVC: UICollectionViewDelegate, UICollectionViewDataSource {
@@ -190,7 +193,7 @@ extension SplashReelVC: UICollectionViewDelegate, UICollectionViewDataSource {
         }else if(scrollView == backgroundCollectionView){
             bottomCollectionView.isScrollEnabled = false
         }
-        timer.pause()
+        timer?.invalidate()
     }
     
     func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool){
@@ -214,7 +217,7 @@ extension SplashReelVC: UICollectionViewDelegate, UICollectionViewDataSource {
         let visiblePoint = CGPoint(x: visibleRect.midX, y: visibleRect.minY)
         guard let indexPath = backgroundCollectionView.indexPathForItem(at: visiblePoint) else { return }
         self.backgroundCollectionView.scrollToItem(at: indexPath, at: .right, animated: true)
-        timer.resume()
+        startTimer()
     }
 }
 
@@ -229,75 +232,6 @@ extension SplashReelVC: UICollectionViewDelegateFlowLayout {
             let cellWidth = screenWidth * 0.32
             return CGSize(width: cellWidth, height: cellHeight)
         }
-    }
-}
-
-class TimerManager {
-    private var timer: DispatchSourceTimer?
-    private var startTime: Date?
-    private var elapsedTime: TimeInterval = 0
-    private var isPaused: Bool = false
-    
-    private let timerQueue =  DispatchQueue.main
-    
-    // Interval between timer triggers
-    let interval: TimeInterval = 5.0
-    
-    // Callback for timer events
-    var onTick: (() -> Void)?
-    
-    init() {
-        // Initialize timer-related properties
-        startTime = nil
-        elapsedTime = 0
-        isPaused = false
-    }
-    
-    func start() {
-        guard timer == nil else { return } // Timer is already running
-        
-        let source = DispatchSource.makeTimerSource(queue: timerQueue)
-        timer = source
-        
-        // Schedule the timer to trigger every `interval` seconds
-        source.schedule(deadline: .now(), repeating: interval)
-        source.setEventHandler { [weak self] in
-            self?.tick()
-        }
-        source.resume()
-        
-        // Update the start time when the timer starts
-        startTime = Date()
-        isPaused = false
-    }
-    
-    func pause() {
-        guard !isPaused else { return } // Timer is already paused
-        
-        isPaused = true
-        elapsedTime += Date().timeIntervalSince(startTime ?? Date())
-        timer?.suspend()
-    }
-    
-    func resume() {
-        guard isPaused else { return } // Timer is not paused
-        
-        isPaused = false
-        startTime = Date() // Reset start time to now
-        timer?.resume()
-    }
-    
-    func reset() {
-        timer?.cancel()
-        timer = nil
-        startTime = nil
-        elapsedTime = 0
-        isPaused = false
-    }
-    
-    private func tick() {
-        // Call the onTick closure to perform actions
-        onTick?()
     }
 }
 
