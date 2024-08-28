@@ -112,8 +112,8 @@ extension SplashReelVC: UICollectionViewDelegate, UICollectionViewDataSource {
         if collectionView == backgroundCollectionView {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SplashReelBackgroundCell.identifier, for: indexPath) as! SplashReelBackgroundCell
             var backgroundIndex = recycledIndex + 1
-            if(backgroundIndex >= data.count){ backgroundIndex = data.count - 1}
-            else if(backgroundIndex < 0){ backgroundIndex =  0}
+            if(backgroundIndex >= data.count){ backgroundIndex = 0}
+            else if(backgroundIndex < 0){ backgroundIndex =  data.count - 1}
                 
             cell.configure(with: data[backgroundIndex].backgroundImage)
             return cell
