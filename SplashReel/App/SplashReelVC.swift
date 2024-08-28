@@ -151,7 +151,7 @@ extension SplashReelVC: UICollectionViewDelegate, UICollectionViewDataSource {
         }
         
         let bottomItemSize = bottomCollectionView.contentSize.width / CGFloat(data.count)
-        let backgroundItemSize = (backgroundCollectionView.contentSize.width - 40) / CGFloat(data.count)
+        let backgroundItemSize = backgroundCollectionView.contentSize.width / CGFloat(data.count)
         let offsetRatio = backgroundItemSize/bottomItemSize
         
         if(scrollView == bottomCollectionView){
