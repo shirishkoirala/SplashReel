@@ -17,6 +17,7 @@ class SplashReelVC: UIViewController {
     private var currentIndex: Int = 0
     private let buffer = 3
     private var totalElements = 0
+    private var userInitiatedScroll = false
     private var images: [String] = [
         "back_to_the_future",
         "good_fellas", "jaws",
@@ -46,7 +47,7 @@ class SplashReelVC: UIViewController {
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.transform = .identity
         collectionView.isUserInteractionEnabled = true
-        collectionView.decelerationRate = .fast
+        collectionView.decelerationRate = .normal
         collectionView.contentInsetAdjustmentBehavior = .never
         collectionView.showsHorizontalScrollIndicator = false
         collectionView.showsVerticalScrollIndicator = false
@@ -68,12 +69,12 @@ class SplashReelVC: UIViewController {
         collectionView.transform = .identity
         collectionView.isPagingEnabled = true
         collectionView.isUserInteractionEnabled = true
-        collectionView.decelerationRate = .fast
-        collectionView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        collectionView.decelerationRate = .normal
         collectionView.showsHorizontalScrollIndicator = false
         collectionView.showsVerticalScrollIndicator = false
         collectionView.delegate = self
         collectionView.dataSource = self
+        collectionView.contentInset = UIEdgeInsets(top: 0.0, left: 20, bottom: 0.0, right: 20)
         return collectionView
     }()
     
@@ -112,6 +113,11 @@ class SplashReelVC: UIViewController {
         images.forEach { image in
             data.append(SplashReelModel(cardImage: image, backgroundImage: image))
         }
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        timer?.invalidate()
     }
 }
 
@@ -185,15 +191,25 @@ extension SplashReelVC: UICollectionViewDelegate, UICollectionViewDataSource {
     }
     
     func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        userInitiatedScroll = true
         timer?.invalidate()
     }
 
     func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
-        realignBackgroundCollectionView()
+        if(!userInitiatedScroll){
+            realignBackgroundCollectionView()
+        }
     }
     
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        realignBackgroundCollectionView()
+        if(!userInitiatedScroll){
+            realignBackgroundCollectionView()
+        }else{
+            if(scrollView == bottomCollectionView){
+                realignBackgroundCollectionView()
+            }
+        }
+        userInitiatedScroll = false
         startTimer()
     }
     
@@ -212,9 +228,7 @@ extension SplashReelVC: UICollectionViewDelegateFlowLayout {
         if(collectionView == backgroundCollectionView){
             return CGSize(width: screenWidth, height: screenHeight)
         }else{
-            let cellHeight = screenHeight * 0.1814
-            let cellWidth = screenWidth * 0.32
-            return CGSize(width: cellWidth, height: cellHeight)
+            return CGSize(width: screenWidth * 0.3200, height: screenHeight * 0.1814)
         }
     }
 }

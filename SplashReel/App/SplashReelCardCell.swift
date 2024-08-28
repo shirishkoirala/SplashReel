@@ -19,7 +19,6 @@ class SplashReelCardCell: UICollectionViewCell {
     lazy var imageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
-        imageView.layer.cornerRadius = 25
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
@@ -35,7 +34,6 @@ class SplashReelCardCell: UICollectionViewCell {
     
     func setup () {
         contentView.addSubview(imageView)
-        contentView.layer.cornerRadius = 50
         imageView.topAnchor.constraint(equalTo: contentView.topAnchor).isActive = true
         imageView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor).isActive = true
         imageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor).isActive = true
@@ -49,15 +47,15 @@ class SplashReelCardCell: UICollectionViewCell {
     func transformIfNeeded() {
         UIView.animate(withDuration: 0.2) {
             if self.isCenter {
-                self.imageView.transform = CGAffineTransform(scaleX: 1.2, y: 1.2)
+                self.transform = CGAffineTransform(scaleX: 1.2, y: 1.2)
                 self.imageView.alpha = 1.0
-                self.imageView.layer.shadowOpacity = 1
-                self.imageView.layer.shadowOffset = CGSize(width: 0, height: 2)
-                self.imageView.layer.shadowRadius = 3
+                self.layer.shadowOpacity = 1
+                self.layer.shadowOffset = CGSize(width: 0, height: 2)
+                self.layer.shadowRadius = 3
             } else {
-                self.imageView.transform = CGAffineTransform.identity
+                self.transform = CGAffineTransform.identity
                 self.imageView.alpha = 0.5
-                self.imageView.layer.shadowOpacity = 0
+                self.layer.shadowOpacity = 0
             }
         }
     }
