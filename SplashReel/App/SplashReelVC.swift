@@ -138,7 +138,6 @@ extension SplashReelVC: UICollectionViewDelegate, UICollectionViewDataSource {
         } else {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SplashReelCardCell.identifier, for: indexPath) as! SplashReelCardCell
             cell.configure(with: data[recycledIndex].cardImage)
-            cell.isCenter = (indexPath.row == currentIndex)
             return cell
         }
     }
@@ -165,12 +164,6 @@ extension SplashReelVC: UICollectionViewDelegate, UICollectionViewDataSource {
             if let centerIndexPath = bottomCollectionView.indexPathForItem(at: centerPoint) {
                 if centerIndexPath.row != currentIndex {
                     currentIndex = centerIndexPath.row
-                    bottomCollectionView.visibleCells.forEach { cell in
-                        if let cell = cell as? SplashReelCardCell,
-                           let indexPath = bottomCollectionView.indexPath(for: cell) {
-                            cell.isCenter = (indexPath.row == centerIndexPath.row)
-                        }
-                    }
                 }
             }
             
@@ -186,7 +179,6 @@ extension SplashReelVC: UICollectionViewDelegate, UICollectionViewDataSource {
                 bottomCollectionView.contentOffset.x = targetOffset
             }
         }
-    
     }
     
     func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
@@ -226,7 +218,7 @@ extension SplashReelVC: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         if(collectionView == backgroundCollectionView){
             return CGSize(width: screenWidth, height: screenHeight)
-        }else{
+        } else {
             return CGSize(width: screenWidth * 0.3200, height: screenHeight * 0.1814)
         }
     }

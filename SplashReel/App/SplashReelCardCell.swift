@@ -10,12 +10,6 @@ import UIKit
 class SplashReelCardCell: UICollectionViewCell {
     static let identifier: String = "SplashReelCardCell"
     
-    var isCenter: Bool = false {
-        didSet {
-            transformIfNeeded()
-        }
-    }
-    
     lazy var imageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
@@ -42,21 +36,5 @@ class SplashReelCardCell: UICollectionViewCell {
     
     func configure (with imageName: String) {
         imageView.image = UIImage(named: imageName)
-    }
-    
-    func transformIfNeeded() {
-        UIView.animate(withDuration: 0.2) {
-            if self.isCenter {
-                self.transform = CGAffineTransform(scaleX: 1.2, y: 1.2)
-                self.imageView.alpha = 1.0
-                self.layer.shadowOpacity = 1
-                self.layer.shadowOffset = CGSize(width: 0, height: 2)
-                self.layer.shadowRadius = 3
-            } else {
-                self.transform = CGAffineTransform.identity
-                self.imageView.alpha = 0.5
-                self.layer.shadowOpacity = 0
-            }
-        }
     }
 }
